@@ -15,7 +15,7 @@ docker compose exec -T app pytest -q
 
 - 1. 申报采信：`/claims`，`/api/claims`。
 - 2. 清单映射：`/billitems`，`/api/billitems`。
-- 3. 变更定版：`/changes`，`/api/changes`。
+- 3. 变更定版：`/changes`，`/api/changes`；审批回传 `/api/changes/approvals`，撤回 `/api/changes/withdraw`，发布 `/api/changes/publish`。
 - 4. 累计还原：`/increment`，`/api/increment`。
 - 5. 扣回核算：`/deductions`，`/api/deductions`。
 - 6. 进度对账：`/valuation`，`/api/valuation`。
@@ -25,11 +25,13 @@ docker compose exec -T app pytest -q
 
 累计申报必须减前期已审金额，变更按审批生效版本覆盖；负进度需关联冲回证据。
 
+变更定版：技术核定与商务定价两端独立回传，按修订号与文件版本裁决、不按到达先后。两端同版本均通过才形成唯一生效版本，且需发布后才入本期；单端先到的定价保持待定。撤回只追加不删除，撤回后仍可追溯，已发布版本立即停止入本期。发布失败保留旧版；同一审批重试幂等，不改状态。
+
 ## 演示
 
 1. 打开首页，核对当次计算、差异和隔离原因。
 2. 切换模块查看源行及裁决依据。
-3. 重跑相同样例，批次号与行数保持一致。
+3. 重跑相同样例，批次号与行数保持一致；审批证据变化则产生新批次。
 4. 复核后导出一份证据CSV。版本已变化的复核提交返回409。
 
 ## 输入与输出
